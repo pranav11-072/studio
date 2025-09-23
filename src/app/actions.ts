@@ -19,11 +19,13 @@ export async function createHerbRecordAndGenerateReport(formData: FormData) {
       throw new Error('Photo is required.');
     }
 
+    const collectionTimestamp = new Date(rawFormData.collectionTimestamp as string).toISOString();
+
     const reportInput: GenerateHerbalOriginReportInput = {
       herbName: rawFormData.herbName as string,
       batchId: rawFormData.batchId as string,
       sourceLocation: rawFormData.sourceLocation as string,
-      collectionTimestamp: rawFormData.collectionTimestamp as string,
+      collectionTimestamp: collectionTimestamp,
       processingDetails: rawFormData.processingDetails as string,
       supplierDetails: rawFormData.supplierDetails as string,
       manufacturerDetails: rawFormData.manufacturerDetails as string,
