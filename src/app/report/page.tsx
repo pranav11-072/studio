@@ -10,7 +10,6 @@ import {
 import { QRCode } from '@/components/qr-code';
 import { Beaker, Calendar, Factory, Fingerprint, Leaf, MapPin, Package, User } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { format } from 'date-fns';
 
 function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
@@ -40,7 +39,15 @@ function ReportPageContents({
   const photoUrl = (searchParams.photoUrl as string) || '';
 
   const formattedTimestamp = collectionTimestamp
-    ? format(new Date(collectionTimestamp), "MMMM d, yyyy 'at' h:mm a")
+    ? new Date(collectionTimestamp).toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
     : 'N/A';
 
   const details = [
