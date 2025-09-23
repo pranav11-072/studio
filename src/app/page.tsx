@@ -1,6 +1,8 @@
 import { HerbForm } from '@/components/herb-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Beaker, Factory, Leaf, Link2, MapPin, Package } from 'lucide-react';
+import { Beaker, Factory, Leaf, Link2, MapPin, Package, ScanLine } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 const steps = [
   {
@@ -43,6 +45,25 @@ export default function RecordHerbPage() {
             blockchain principles and AI to ensure authenticity and quality from source to final
             product.
           </p>
+          <Card className="mt-8 bg-card/90 border-2 border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 font-headline">
+                <ScanLine className="h-6 w-6" />
+                New: Scan & Identify
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-foreground/80 mb-4">
+                Not sure what herb you have? Use your camera to take a picture and search for it online.
+              </p>
+              <Button asChild variant="outline">
+                <Link href="/scan">
+                  <ScanLine className="mr-2 h-4 w-4" />
+                  Scan & Identify Herb
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
           <div className="mt-10 space-y-8">
             {steps.map((step, index) => (
               <div key={index} className="flex items-start gap-4">
