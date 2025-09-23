@@ -14,21 +14,38 @@ export async function createHerbRecordAndGenerateReport(formData: FormData) {
   try {
     const rawFormData = Object.fromEntries(formData.entries());
     const photoFile = rawFormData.photo as File;
+    const herbName = rawFormData.herbName as string;
+    const batchId = rawFormData.batchId as string;
+    const sourceLocation = rawFormData.sourceLocation as string;
+    const collectionTimestampInput = rawFormData.collectionTimestamp as string;
+    const processingDetails = rawFormData.processingDetails as string;
+    const supplierDetails = rawFormData.supplierDetails as string;
+    const manufacturerDetails = rawFormData.manufacturerDetails as string;
 
-    if (!photoFile || photoFile.size === 0) {
-      throw new Error('Photo is required.');
+    if (
+      !herbName ||
+      !batchId ||
+      !sourceLocation ||
+      !collectionTimestampInput ||
+      !processingDetails ||
+      !supplierDetails ||
+      !manufacturerDetails ||
+      !photoFile ||
+      photoFile.size === 0
+    ) {
+      throw new Error('All fields are required.');
     }
 
-    const collectionTimestamp = new Date(rawFormData.collectionTimestamp as string).toISOString();
+    const collectionTimestamp = new Date(collectionTimestampInput).toISOString();
 
     const reportInput: GenerateHerbalOriginReportInput = {
-      herbName: rawFormData.herbName as string,
-      batchId: rawFormData.batchId as string,
-      sourceLocation: rawFormData.sourceLocation as string,
+      herbName: herbName,
+      batchId: batchId,
+      sourceLocation: sourceLocation,
       collectionTimestamp: collectionTimestamp,
-      processingDetails: rawFormData.processingDetails as string,
-      supplierDetails: rawFormData.supplierDetails as string,
-      manufacturerDetails: rawFormData.manufacturerDetails as string,
+      processingDetails: processingDetails,
+      supplierDetails: supplierDetails,
+      manufacturerDetails: manufacturerDetails,
       photoDataUri: await fileToDataUri(photoFile),
     };
 
