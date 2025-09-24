@@ -5,22 +5,25 @@ import { generateHerbalOriginReport } from '@/ai/flows/generate-herbal-origin-re
 import type { GenerateHerbalOriginReportInput } from '@/ai/flows/generate-herbal-origin-report';
 
 async function fileToDataUri(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
-  const base64 = Buffer.from(buffer).toString('base64');
+  const buffer = new Uint8Array(await file.arrayBuffer());
+  let binary = '';
+  buffer.forEach(byte => {
+    binary += String.fromCharCode(byte);
+  });
+  const base64 = btoa(binary);
   return `data:${file.type};base64,${base64}`;
 }
 
 export async function createHerbRecordAndGenerateReport(formData: FormData) {
   try {
-    const rawFormData = Object.fromEntries(formData.entries());
-    const photoFile = rawFormData.photo as File;
-    const herbName = rawFormData.herbName as string;
-    const batchId = rawFormData.batchId as string;
-    const sourceLocation = rawFormData.sourceLocation as string;
-    const collectionTimestampInput = rawFormData.collectionTimestamp as string;
-    const processingDetails = rawFormData.processingDetails as string;
-    const supplierDetails = rawFormData.supplierDetails as string;
-    const manufacturerDetails = rawFormData.manufacturerDetails as string;
+    const photoFile = formData.get('photo') as File | null;
+    const herbName = formData.get('herbName') as string | null;
+    const batchId = formData.get('batchId') as string | null;
+    const sourceLocation = formData.get('sourceLocation') as string | null;
+    const collectionTimestampInput = formData.get('collectionTimestamp') as string | null;
+    const processingDetails = formData.get('processingDetails') as string | null;
+    const supplierDetails = formData.get('supplierDetails') as string | null;
+    const manufacturerDetails = formData.get('manufacturerDetails') as string | null;
 
     if (
       !herbName ||
@@ -38,15 +41,17 @@ export async function createHerbRecordAndGenerateReport(formData: FormData) {
 
     const collectionTimestamp = new Date(collectionTimestampInput).toISOString();
 
+    const photoDataUri = await fileToDataUri(photoFile);
+
     const reportInput: GenerateHerbalOriginReportInput = {
-      herbName: herbName,
-      batchId: batchId,
-      sourceLocation: sourceLocation,
-      collectionTimestamp: collectionTimestamp,
-      processingDetails: processingDetails,
-      supplierDetails: supplierDetails,
-      manufacturerDetails: manufacturerDetails,
-      photoDataUri: await fileToDataUri(photoFile),
+      herbName,
+      batchId,
+      sourceLocation,
+      collectionTimestamp,
+      processingDetails,
+      supplierDetails,
+      manufacturerDetails,
+      photoDataUri,
     };
 
     const { report } = await generateHerbalOriginReport(reportInput);
@@ -55,14 +60,18 @@ export async function createHerbRecordAndGenerateReport(formData: FormData) {
       throw new Error('Failed to generate report from AI model.');
     }
 
-    const params = new URLSearchParams();
-    for (const key in reportInput) {
-      if (key !== 'photoDataUri') {
-        params.set(key, reportInput[key as keyof typeof reportInput]);
-      }
-    }
-    params.set('report', report);
-    params.set('photoUrl', reportInput.photoDataUri);
+    // ⚠️ Instead of passing full base64 in URL, pass minimal params
+    const params = new URLSearchParams({
+      herbName,
+      batchId,
+      sourceLocation,
+      collectionTimestamp,
+      processingDetails,
+      supplierDetails,
+      manufacturerDetails,
+      report,
+      // If needed, save photoDataUri to DB and pass a reference (photoId)
+    });
 
     redirect(`/report?${params.toString()}`);
   } catch (error) {
